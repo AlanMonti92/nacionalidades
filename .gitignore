@@ -2,6 +2,7 @@
 *.csv
 *.xlsx
 *.xls
+!resoluciones.csv
 
 # Entornos virtuales
 venv/
