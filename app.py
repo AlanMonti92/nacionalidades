@@ -82,20 +82,21 @@ opcion = st.sidebar.radio(
 # ===== OPCIÓN 1: CALCULAR FECHA ESTIMADA =====
 if opcion == "📅 Calcular mi fecha estimada":
     st.header("Calculá tu fecha estimada de resolución")
-    
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        # Input de fecha
-        fecha_presentacion = st.date_input(
-            "¿Cuándo presentaste tu trámite?",
-            value=datetime.now(),
-            min_value=datetime(2022, 1, 1),
-            max_value=datetime.now()
-        )
-        
-        # Botón de calcular
-        if st.button("🔮 Calcular fecha estimada", type="primary"):
+
+    # Input de fecha (ancho completo)
+    fecha_presentacion = st.date_input(
+        "¿Cuándo presentaste tu trámite?",
+        value=datetime.now(),
+        min_value=datetime(2022, 1, 1),
+        max_value=datetime.now()
+    )
+
+    # Botón (UNA sola vez)
+    if st.button(
+        "🔮 Calcular fecha estimada",
+        type="primary",
+        key="btn_calcular_fecha"
+    ):
             
             # Estadísticas de tiempos
             dias_promedio = df_resueltos['Dias_Espera'].mean()
@@ -104,13 +105,18 @@ if opcion == "📅 Calcular mi fecha estimada":
             meses_mediana = df_resueltos['Meses_Espera'].median()
             
             # Percentiles
-            p25 = df_resueltos['Dias_Espera'].quantile(0.25)
-            p75 = df_resueltos['Dias_Espera'].quantile(0.75)
+            #p25 = df_resueltos['Dias_Espera'].quantile(0.25)
+            #p75 = df_resueltos['Dias_Espera'].quantile(0.75)
+
+            p45 = df_resueltos['Dias_Espera'].quantile(0.45)
+            p95 = df_resueltos['Dias_Espera'].quantile(0.95)
             
             # Calcular fecha estimada (usando mediana)
             fecha_estimada_mediana = fecha_presentacion + timedelta(days=int(dias_mediana))
-            fecha_estimada_p25 = fecha_presentacion + timedelta(days=int(p25))
-            fecha_estimada_p75 = fecha_presentacion + timedelta(days=int(p75))
+            #fecha_estimada_p25 = fecha_presentacion + timedelta(days=int(p25))
+            #fecha_estimada_p75 = fecha_presentacion + timedelta(days=int(p75))
+            fecha_estimada_p45 = fecha_presentacion + timedelta(days=int(p45))
+            fecha_estimada_p95 = fecha_presentacion + timedelta(days=int(p95))
             
             # Mostrar resultados
             st.success("✅ Cálculo completado")
@@ -120,23 +126,23 @@ if opcion == "📅 Calcular mi fecha estimada":
             
             with col_a:
                 st.metric(
-                    "🎯 Fecha estimada (más probable)",
+                    "🎯 Fecha estimada (más probable - segun datos excel)",
                     fecha_estimada_mediana.strftime("%d/%m/%Y"),
                     f"{int(meses_mediana)} meses aprox."
                 )
             
             with col_b:
                 st.metric(
-                    "⚡ Escenario optimista (25%)",
-                    fecha_estimada_p25.strftime("%d/%m/%Y"),
-                    f"{int(p25/30.44)} meses"
+                    "⚡ Escenario optimista (45%)",
+                    fecha_estimada_p45.strftime("%d/%m/%Y"),
+                    f"{int(p45/30.44)} meses"
                 )
             
             with col_c:
                 st.metric(
-                    "🐌 Escenario conservador (75%)",
-                    fecha_estimada_p75.strftime("%d/%m/%Y"),
-                    f"{int(p75/30.44)} meses"
+                    "🐌 Escenario conservador (95%) - mas probable por la falta de datos",
+                    fecha_estimada_p95.strftime("%d/%m/%Y"),
+                    f"{int(p95/30.44)} meses"
                 )
             
             # Información adicional
@@ -145,7 +151,7 @@ if opcion == "📅 Calcular mi fecha estimada":
             
             - **Tiempo promedio:** {int(meses_promedio)} meses ({int(dias_promedio)} días)
             - **Tiempo mediano:** {int(meses_mediana)} meses ({int(dias_mediana)} días)
-            - **Rango más común:** Entre {int(p25/30.44)} y {int(p75/30.44)} meses
+            - **Rango más común:** Entre {int(p45/30.44)} y {int(p95/30.44)} meses
             
             💡 La fecha estimada está basada en {len(df_resueltos)} casos resueltos del grupo de WhatsApp.
             """)
@@ -170,14 +176,15 @@ if opcion == "📅 Calcular mi fecha estimada":
             
             st.plotly_chart(fig_hist, use_container_width=True)
     
-        with st.expander("ℹ️ Cómo funciona esta calculadora", expanded=False):
-            st.markdown(f"""
-            Calculadora basada en **{len(df_resueltos)} casos resueltos** reales del grupo de WhatsApp.
-            
-            La fecha estimada usa la **mediana** de tiempos históricos (más confiable que el promedio).
-            
-            💡 *Esto es solo una estimación. Los tiempos pueden variar.*
-            """)
+# ⬅️ ESTO VA FUERA DEL IF DEL BOTÓN
+    with st.expander("ℹ️ Cómo funciona esta calculadora", expanded=False):
+        st.markdown(f"""
+        Calculadora basada en **{len(df_resueltos)} casos resueltos** reales del grupo de WhatsApp.
+
+        La fecha estimada usa la **mediana** de tiempos históricos (más confiable que el promedio).
+
+        💡 *Esto es solo una estimación. Los tiempos pueden variar.*
+        """)
 
 # ===== OPCIÓN 2: ESTADÍSTICAS GENERALES =====
 else:
