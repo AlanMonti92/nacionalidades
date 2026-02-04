@@ -12,6 +12,23 @@ st.set_page_config(
     layout="wide"
 )
 
+def inject_ga(measurement_id: str):
+    st.components.v1.html(
+        f"""
+        <script async src="https://www.googletagmanager.com/gtag/js?id={measurement_id}"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){{dataLayer.push(arguments);}}
+          gtag('js', new Date());
+          gtag('config', '{measurement_id}', {{ 'anonymize_ip': true }});
+        </script>
+        """,
+        height=0,
+    )
+
+inject_ga("G-4QDSBC0514")
+
+
 # Función para cargar y limpiar los datos
 @st.cache_data
 def cargar_datos():
