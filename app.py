@@ -1,0 +1,275 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
+import numpy as np
+
+# Configuración de la página
+st.set_page_config(
+    page_title="Calculadora Nacionalidad Española - Córdoba",
+    page_icon="🇪🇸",
+    layout="wide"
+)
+
+# Función para cargar y limpiar los datos
+@st.cache_data
+def cargar_datos():
+    # Leer el CSV (skiprows=1 para saltar la fila de título)
+    df = pd.read_csv('resoluciones.csv', skiprows=1)
+    
+    # Limpiar columnas innecesarias
+    df = df[['Anexo ', 'Número de expediente ', 'Fecha Presentación', 
+             'Fecha Notificación Mail', 'Fecha Resolución', 'Observaciones']]
+    
+    # Renombrar columnas
+    df.columns = ['Anexo', 'Num_Expediente', 'Fecha_Presentacion', 
+                  'Fecha_Notificacion', 'Fecha_Resolucion', 'Observaciones']
+    
+    # Convertir fechas
+    df['Fecha_Presentacion'] = pd.to_datetime(df['Fecha_Presentacion'], format='%d/%m/%Y', errors='coerce')
+    df['Fecha_Resolucion'] = pd.to_datetime(df['Fecha_Resolucion'], format='%d/%m/%Y', errors='coerce')
+    df['Fecha_Notificacion'] = pd.to_datetime(df['Fecha_Notificacion'], format='%d/%m/%Y', errors='coerce')
+    
+    # Filtrar solo casos resueltos
+    df_resueltos = df[df['Fecha_Resolucion'].notna()].copy()
+    
+    # Calcular días de espera
+    df_resueltos['Dias_Espera'] = (df_resueltos['Fecha_Resolucion'] - df_resueltos['Fecha_Presentacion']).dt.days
+    
+    # Calcular meses de espera
+    df_resueltos['Meses_Espera'] = df_resueltos['Dias_Espera'] / 30.44  # Promedio de días por mes
+    
+    return df, df_resueltos
+
+# Cargar datos
+df_completo, df_resueltos = cargar_datos()
+
+# Título principal
+st.title("🇪🇸 Calculadora de Nacionalidad Española")
+st.subheader("Trámites presentados en Córdoba, Argentina")
+
+# Sidebar para navegación
+st.sidebar.title("Navegación")
+opcion = st.sidebar.radio(
+    "Selecciona una opción:",
+    ["📅 Calcular mi fecha estimada", "📊 Estadísticas generales"]
+)
+
+# ===== OPCIÓN 1: CALCULAR FECHA ESTIMADA =====
+if opcion == "📅 Calcular mi fecha estimada":
+    st.header("Calculá tu fecha estimada de resolución")
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Input de fecha
+        fecha_presentacion = st.date_input(
+            "¿Cuándo presentaste tu trámite?",
+            value=datetime.now(),
+            min_value=datetime(2022, 1, 1),
+            max_value=datetime.now()
+        )
+        
+        # Botón de calcular
+        if st.button("🔮 Calcular fecha estimada", type="primary"):
+            
+            # Estadísticas de tiempos
+            dias_promedio = df_resueltos['Dias_Espera'].mean()
+            dias_mediana = df_resueltos['Dias_Espera'].median()
+            meses_promedio = df_resueltos['Meses_Espera'].mean()
+            meses_mediana = df_resueltos['Meses_Espera'].median()
+            
+            # Percentiles
+            p25 = df_resueltos['Dias_Espera'].quantile(0.25)
+            p75 = df_resueltos['Dias_Espera'].quantile(0.75)
+            
+            # Calcular fecha estimada (usando mediana)
+            fecha_estimada_mediana = fecha_presentacion + timedelta(days=int(dias_mediana))
+            fecha_estimada_p25 = fecha_presentacion + timedelta(days=int(p25))
+            fecha_estimada_p75 = fecha_presentacion + timedelta(days=int(p75))
+            
+            # Mostrar resultados
+            st.success("✅ Cálculo completado")
+            
+            # Métricas principales
+            col_a, col_b, col_c = st.columns(3)
+            
+            with col_a:
+                st.metric(
+                    "🎯 Fecha estimada (más probable)",
+                    fecha_estimada_mediana.strftime("%d/%m/%Y"),
+                    f"{int(meses_mediana)} meses aprox."
+                )
+            
+            with col_b:
+                st.metric(
+                    "⚡ Escenario optimista (25%)",
+                    fecha_estimada_p25.strftime("%d/%m/%Y"),
+                    f"{int(p25/30.44)} meses"
+                )
+            
+            with col_c:
+                st.metric(
+                    "🐌 Escenario conservador (75%)",
+                    fecha_estimada_p75.strftime("%d/%m/%Y"),
+                    f"{int(p75/30.44)} meses"
+                )
+            
+            # Información adicional
+            st.info(f"""
+            📌 **Información importante:**
+            
+            - **Tiempo promedio:** {int(meses_promedio)} meses ({int(dias_promedio)} días)
+            - **Tiempo mediano:** {int(meses_mediana)} meses ({int(dias_mediana)} días)
+            - **Rango más común:** Entre {int(p25/30.44)} y {int(p75/30.44)} meses
+            
+            💡 La fecha estimada está basada en {len(df_resueltos)} casos resueltos del grupo de WhatsApp.
+            """)
+            
+            # Distribución de tiempos
+            st.subheader("📈 Distribución de tiempos de resolución")
+            
+            fig_hist = px.histogram(
+                df_resueltos,
+                x='Meses_Espera',
+                nbins=30,
+                title='¿Cuánto tiempo tardan los trámites?',
+                labels={'Meses_Espera': 'Meses de espera', 'count': 'Cantidad de casos'},
+                color_discrete_sequence=['#1f77b4']
+            )
+            
+            # Agregar líneas de referencia
+            fig_hist.add_vline(x=meses_mediana, line_dash="dash", line_color="red", 
+                              annotation_text=f"Mediana: {int(meses_mediana)} meses")
+            fig_hist.add_vline(x=meses_promedio, line_dash="dash", line_color="green",
+                              annotation_text=f"Promedio: {int(meses_promedio)} meses")
+            
+            st.plotly_chart(fig_hist, use_container_width=True)
+    
+    with col2:
+        st.info("""
+        ### ℹ️ Cómo funciona
+        
+        Esta calculadora usa datos reales de **{} casos resueltos** del grupo de WhatsApp.
+        
+        **La fecha estimada** se calcula usando la **mediana** de tiempos históricos, que es más confiable que el promedio.
+        
+        **Recuerda:** Esto es solo una estimación basada en casos anteriores. Los tiempos pueden variar.
+        """.format(len(df_resueltos)))
+
+# ===== OPCIÓN 2: ESTADÍSTICAS GENERALES =====
+else:
+    st.header("📊 Estadísticas Generales del Proceso")
+    
+    # Métricas principales
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total presentados", len(df_completo))
+    
+    with col2:
+        st.metric("✅ Resueltos", len(df_resueltos))
+    
+    with col3:
+        st.metric("⏳ En proceso", len(df_completo) - len(df_resueltos))
+    
+    with col4:
+        porcentaje_resueltos = (len(df_resueltos) / len(df_completo)) * 100
+        st.metric("% Resueltos", f"{porcentaje_resueltos:.1f}%")
+    
+    st.divider()
+    
+    # Últimas resoluciones
+    st.subheader("🔔 Últimas 10 resoluciones")
+    
+    ultimas = df_resueltos.nlargest(10, 'Fecha_Resolucion')[
+        ['Fecha_Presentacion', 'Fecha_Resolucion', 'Meses_Espera', 'Anexo', 'Observaciones']
+    ].copy()
+    
+    ultimas['Fecha_Presentacion'] = ultimas['Fecha_Presentacion'].dt.strftime('%d/%m/%Y')
+    ultimas['Fecha_Resolucion'] = ultimas['Fecha_Resolucion'].dt.strftime('%d/%m/%Y')
+    ultimas['Meses_Espera'] = ultimas['Meses_Espera'].round(1)
+    ultimas.columns = ['Fecha Presentación', 'Fecha Resolución', 'Meses', 'Anexo', 'Observaciones']
+    
+    st.dataframe(ultimas, use_container_width=True, hide_index=True)
+    
+    st.divider()
+    
+    # Gráficos
+    col_a, col_b = st.columns(2)
+    
+    with col_a:
+        # Tendencia temporal
+        st.subheader("📈 Tendencia de resoluciones por mes")
+        
+        df_temporal = df_resueltos.copy()
+        df_temporal['Mes_Resolucion'] = df_temporal['Fecha_Resolucion'].dt.to_period('M').astype(str)
+        
+        resueltos_por_mes = df_temporal.groupby('Mes_Resolucion').size().reset_index(name='Cantidad')
+        
+        fig_tendencia = px.bar(
+            resueltos_por_mes,
+            x='Mes_Resolucion',
+            y='Cantidad',
+            title='Resoluciones por mes',
+            labels={'Mes_Resolucion': 'Mes', 'Cantidad': 'Casos resueltos'},
+            color_discrete_sequence=['#2ecc71']
+        )
+        
+        st.plotly_chart(fig_tendencia, use_container_width=True)
+    
+    with col_b:
+        # Distribución por anexo
+        st.subheader("📋 Distribución por tipo de Anexo")
+        
+        anexos = df_resueltos['Anexo'].value_counts().reset_index()
+        anexos.columns = ['Anexo', 'Cantidad']
+        
+        fig_anexos = px.pie(
+            anexos,
+            values='Cantidad',
+            names='Anexo',
+            title='Casos por tipo de Anexo',
+            color_discrete_sequence=px.colors.qualitative.Set3
+        )
+        
+        st.plotly_chart(fig_anexos, use_container_width=True)
+    
+    st.divider()
+    
+    # Estadísticas de tiempo por anexo
+    st.subheader("⏱️ Tiempos promedio por tipo de Anexo")
+    
+    tiempos_anexo = df_resueltos.groupby('Anexo').agg({
+        'Meses_Espera': ['mean', 'median', 'count']
+    }).round(1)
+    
+    tiempos_anexo.columns = ['Promedio (meses)', 'Mediana (meses)', 'Cantidad de casos']
+    tiempos_anexo = tiempos_anexo.reset_index()
+    
+    st.dataframe(tiempos_anexo, use_container_width=True, hide_index=True)
+    
+    # Box plot de tiempos
+    st.subheader("📊 Distribución de tiempos de espera")
+    
+    fig_box = px.box(
+        df_resueltos,
+        x='Anexo',
+        y='Meses_Espera',
+        title='Distribución de tiempos por Anexo',
+        labels={'Meses_Espera': 'Meses de espera', 'Anexo': 'Tipo de Anexo'},
+        color='Anexo',
+        color_discrete_sequence=px.colors.qualitative.Pastel
+    )
+    
+    st.plotly_chart(fig_box, use_container_width=True)
+
+# Footer
+st.divider()
+st.caption("""
+💡 **Nota:** Esta aplicación usa datos reales del grupo de WhatsApp de solicitantes en Córdoba. 
+Las estimaciones son aproximadas y pueden variar según diversos factores.
+
+📊 Última actualización de datos: {fecha}
+""".format(fecha=datetime.now().strftime("%d/%m/%Y")))
