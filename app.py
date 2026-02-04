@@ -30,7 +30,7 @@ inject_ga("G-4QDSBC0514")
 
 
 # Función para cargar y limpiar los datos
-@st.cache_data
+@st.cache_data(ttl=3600)  # 1 hora
 def cargar_datos():
     # Leer el CSV (skiprows=1 para saltar la fila de título)
     df = pd.read_csv('resoluciones.csv', skiprows=1)
@@ -61,6 +61,12 @@ def cargar_datos():
 
 # Cargar datos
 df_completo, df_resueltos = cargar_datos()
+
+st.sidebar.write("Total presentados", len(df_completo))
+st.sidebar.write("No incluidos en el cálculo", len(df_completo) - len(df_resueltos))
+st.sidebar.write("Casos usados:", len(df_resueltos))
+st.sidebar.write("Mediana meses:", round(df_resueltos['Meses_Espera'].median(), 1))
+
 
 # Título principal
 st.title("Calculadora de Nacionalidad Española")
@@ -187,7 +193,7 @@ else:
         st.metric("✅ Resueltos", len(df_resueltos))
     
     with col3:
-        st.metric("⏳ En proceso", len(df_completo) - len(df_resueltos))
+        st.metric("⏳ No incluidos en el cálculo", len(df_completo) - len(df_resueltos))
     
     with col4:
         porcentaje_resueltos = (len(df_resueltos) / len(df_completo)) * 100
