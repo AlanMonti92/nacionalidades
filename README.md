@@ -1,4 +1,4 @@
-# 🇪🇸 Calculadora de Nacionalidad Española - Córdoba
+# Calculadora de Nacionalidad Española - Córdoba
 
 Aplicación web para estimar tiempos de resolución de trámites de nacionalidad española presentados en Córdoba, Argentina.
 
@@ -55,16 +55,12 @@ Asegúrate de tener estos archivos:
 - `resoluciones.csv` (datos)
 
 ### 3. Deploy
-1. Crea un nuevo proyecto en Railway
-2. Conecta tu repositorio de GitHub o sube los archivos
-3. Railway detectará automáticamente que es una app de Python
-4. Agrega las siguientes variables de entorno en Railway:
-   - No necesitas configurar nada especial
+## Opciones de Deploy
 
-### 4. Configurar el comando de inicio
-En Railway, ve a Settings > Deploy y asegúrate de que el comando de inicio sea:
-```
-streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+### Streamlit Cloud (Gratis, recomendado)
+### Railway (Gratis con límites)
+### Heroku
+### Local
 ```
 
 ## 📁 Estructura del proyecto

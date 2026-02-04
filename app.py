@@ -46,7 +46,7 @@ def cargar_datos():
 df_completo, df_resueltos = cargar_datos()
 
 # Título principal
-st.title("🇪🇸 Calculadora de Nacionalidad Española")
+st.title("Calculadora de Nacionalidad Española")
 st.subheader("Trámites presentados en Córdoba, Argentina")
 
 # Sidebar para navegación
@@ -147,20 +147,18 @@ if opcion == "📅 Calcular mi fecha estimada":
             
             st.plotly_chart(fig_hist, use_container_width=True)
     
-    with col2:
-        st.info("""
-        ### ℹ️ Cómo funciona
-        
-        Esta calculadora usa datos reales de **{} casos resueltos** del grupo de WhatsApp.
-        
-        **La fecha estimada** se calcula usando la **mediana** de tiempos históricos, que es más confiable que el promedio.
-        
-        **Recuerda:** Esto es solo una estimación basada en casos anteriores. Los tiempos pueden variar.
-        """.format(len(df_resueltos)))
+        with st.expander("ℹ️ Cómo funciona esta calculadora", expanded=False):
+            st.markdown(f"""
+            Calculadora basada en **{len(df_resueltos)} casos resueltos** reales del grupo de WhatsApp.
+            
+            La fecha estimada usa la **mediana** de tiempos históricos (más confiable que el promedio).
+            
+            💡 *Esto es solo una estimación. Los tiempos pueden variar.*
+            """)
 
 # ===== OPCIÓN 2: ESTADÍSTICAS GENERALES =====
 else:
-    st.header("📊 Estadísticas Generales del Proceso")
+    st.header("Estadísticas Generales del Proceso")
     
     # Métricas principales
     col1, col2, col3, col4 = st.columns(4)
@@ -251,25 +249,26 @@ else:
     st.dataframe(tiempos_anexo, use_container_width=True, hide_index=True)
     
     # Box plot de tiempos
-    st.subheader("📊 Distribución de tiempos de espera")
+    #st.subheader("📊 Distribución de tiempos de espera")
     
-    fig_box = px.box(
-        df_resueltos,
-        x='Anexo',
-        y='Meses_Espera',
-        title='Distribución de tiempos por Anexo',
-        labels={'Meses_Espera': 'Meses de espera', 'Anexo': 'Tipo de Anexo'},
-        color='Anexo',
-        color_discrete_sequence=px.colors.qualitative.Pastel
-    )
+    #fig_box = px.box(
+    #    df_resueltos,
+    #    x='Anexo',
+    #    y='Meses_Espera',
+    #    title='Distribución de tiempos por Anexo',
+    #    labels={'Meses_Espera': 'Meses de espera', 'Anexo': 'Tipo de Anexo'},
+    #    color='Anexo',
+    #    color_discrete_sequence=px.colors.qualitative.Pastel
+    #)
     
-    st.plotly_chart(fig_box, use_container_width=True)
+    #st.plotly_chart(fig_box, use_container_width=True) 
 
 # Footer
 st.divider()
 st.caption("""
 💡 **Nota:** Esta aplicación usa datos reales del grupo de WhatsApp de solicitantes en Córdoba. 
 Las estimaciones son aproximadas y pueden variar según diversos factores.
+
 
 📊 Última actualización de datos: {fecha}
 """.format(fecha=datetime.now().strftime("%d/%m/%Y")))
