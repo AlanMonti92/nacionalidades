@@ -126,25 +126,29 @@ if opcion == "📅 Calcular mi fecha estimada":
             
             with col_a:
                 st.metric(
-                    "🎯 Fecha estimada (más probable - segun datos excel)",
+                    "📊 Estimación basada en casos completos (mediana)",
                     fecha_estimada_mediana.strftime("%d/%m/%Y"),
-                    f"{int(meses_mediana)} meses aprox."
+                    f"{int(meses_mediana)} meses aprox.",
+                    help="Calculada solo con trámites que tienen fechas completas. No contempla expedientes con datos faltantes."
                 )
-            
-            with col_b:
-                st.metric(
-                    "⚡ Escenario optimista (45%)",
-                    fecha_estimada_p45.strftime("%d/%m/%Y"),
-                    f"{int(p45/30.44)} meses"
-                )
-            
-            with col_c:
-                st.metric(
-                    "🐌 Escenario conservador (95%) - mas probable por la falta de datos",
-                    fecha_estimada_p95.strftime("%d/%m/%Y"),
-                    f"{int(p95/30.44)} meses"
-                )
-            
+
+                        
+                with col_b:
+                    st.metric(
+                        "⚡ Escenario optimista (P45)",
+                        fecha_estimada_p45.strftime("%d/%m/%Y"),
+                        f"{int(p45/30.44)} meses",
+                        help="El 45% de los trámites históricos se resolvió antes de esta fecha. Representa un escenario favorable."
+                    )
+
+                    with col_c:
+                        st.metric(
+                            "🛡️ Escenario más probable hoy (P95)",
+                            fecha_estimada_p95.strftime("%d/%m/%Y"),
+                            f"{int(p95/30.44)} meses",
+                            help="El 95% de los trámites históricos se resolvió en este plazo o antes. Es el escenario más confiable cuando hay datos incompletos."
+                        )
+
             # Información adicional
             st.info(f"""
             📌 **Información importante:**
