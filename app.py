@@ -263,12 +263,28 @@ else:
     
     #st.plotly_chart(fig_box, use_container_width=True) 
 
-# Footer
 st.divider()
+st.caption(f"""
+💡 **Nota**  
+Esta aplicación usa datos reales del grupo de WhatsApp de solicitantes en Córdoba.  
+Las estimaciones son aproximadas y pueden variar según múltiples factores.
+
+📊 **Última actualización:** {datetime.now().strftime("%d/%m/%Y")}
+""")
+
+st.divider()
+
 st.caption("""
-💡 **Nota:** Esta aplicación usa datos reales del grupo de WhatsApp de solicitantes en Córdoba. 
-Las estimaciones son aproximadas y pueden variar según diversos factores.
+🤍 **Proyecto independiente**  
+Si esta herramienta te fue útil y querés colaborar (opcional):  
+**Alias:** alanmonti.mp
+""")
 
+st.divider()
 
-📊 Última actualización de datos: {fecha}
-""".format(fecha=datetime.now().strftime("%d/%m/%Y")))
+st.caption("""
+👤 **Alan Montis**  
+📧 alanmonti92@gmail.com  
+🔗 https://www.linkedin.com/in/alanmontis/  
+💻 https://github.com/AlanMonti92
+""")
