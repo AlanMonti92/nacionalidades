@@ -5,6 +5,8 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import numpy as np
 
+now_ar = pd.Timestamp.now(tz="America/Argentina/Buenos_Aires")
+
 # Configuración de la página
 st.set_page_config(
     page_title="Calculadora Nacionalidad Española - Córdoba",
