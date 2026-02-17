@@ -38,7 +38,7 @@ inject_ga("G-4QDSBC0514")
 
 
 # Función para cargar y limpiar los datos
-@st.cache_data(ttl=3600)  # 1 hora
+@st.cache_data(ttl=600)  # 10 minutos
 def cargar_datos():
     # Leer el CSV (skiprows=1 para saltar la fila de título)
     df = pd.read_csv('resoluciones.csv', skiprows=1)
