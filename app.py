@@ -187,7 +187,7 @@ if opcion == "📅 Calcular mi fecha estimada":
             fig_hist.add_vline(x=meses_promedio, line_dash="dash", line_color="green",
                               annotation_text=f"Promedio: {int(meses_promedio)} meses")
             
-            st.plotly_chart(fig_hist, use_container_width=True)
+            st.plotly_chart(fig_hist, width='stretch')
     
 # ⬅️ ESTO VA FUERA DEL IF DEL BOTÓN
     with st.expander("ℹ️ Cómo funciona esta calculadora", expanded=False):
@@ -233,7 +233,7 @@ else:
     ultimas['Meses_Espera'] = ultimas['Meses_Espera'].round(1)
     ultimas.columns = ['Fecha Presentación', 'Fecha Resolución', 'Meses', 'Anexo', 'Observaciones']
     
-    st.dataframe(ultimas, use_container_width=True, hide_index=True)
+    st.dataframe(ultimas, width='stretch', hide_index=True)
     
     st.divider()
     
@@ -258,7 +258,7 @@ else:
             color_discrete_sequence=['#2ecc71']
         )
         
-        st.plotly_chart(fig_tendencia, use_container_width=True)
+        st.plotly_chart(fig_tendencia, width='stretch')
     
     with col_b:
         # Distribución por anexo
@@ -275,7 +275,7 @@ else:
             color_discrete_sequence=px.colors.qualitative.Set3
         )
         
-        st.plotly_chart(fig_anexos, use_container_width=True)
+        st.plotly_chart(fig_anexos, width='stretch')
     
     st.divider()
     
@@ -289,7 +289,7 @@ else:
     tiempos_anexo.columns = ['Promedio (meses)', 'Mediana (meses)', 'Cantidad de casos']
     tiempos_anexo = tiempos_anexo.reset_index()
     
-    st.dataframe(tiempos_anexo, use_container_width=True, hide_index=True)
+    st.dataframe(tiempos_anexo, width='stretch', hide_index=True)
     
     # Box plot de tiempos
     #st.subheader("📊 Distribución de tiempos de espera")
@@ -304,7 +304,7 @@ else:
     #    color_discrete_sequence=px.colors.qualitative.Pastel
     #)
     
-    #st.plotly_chart(fig_box, use_container_width=True) 
+    #st.plotly_chart(fig_box, width='stretch') 
 
 st.divider()
 st.caption(f"""
