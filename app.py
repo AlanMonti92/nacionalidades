@@ -5,6 +5,14 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import numpy as np
 
+from zoneinfo import ZoneInfo
+from datetime import datetime
+
+TZ_AR = ZoneInfo("America/Argentina/Buenos_Aires")
+
+def now_ar():
+    return datetime.now(TZ_AR).replace(tzinfo=None)
+
 # Configuración de la página
 st.set_page_config(
     page_title="Calculadora Nacionalidad Española - Córdoba",
@@ -30,7 +38,7 @@ inject_ga("G-4QDSBC0514")
 
 
 # Función para cargar y limpiar los datos
-@st.cache_data(ttl=3600)  # 1 hora
+@st.cache_data(ttl=600)  # 10 minutos
 def cargar_datos():
     # Leer el CSV (skiprows=1 para saltar la fila de título)
     df = pd.read_csv('resoluciones.csv', skiprows=1)
@@ -86,10 +94,11 @@ if opcion == "📅 Calcular mi fecha estimada":
     # Input de fecha (ancho completo)
     fecha_presentacion = st.date_input(
         "¿Cuándo presentaste tu trámite?",
-        value=datetime.now(),
-        min_value=datetime(2022, 1, 1),
-        max_value=datetime.now()
+        value=now_ar().date(),
+        min_value=datetime(2022, 1, 1).date(),
+        max_value=now_ar().date()
     )
+
 
     # Botón (UNA sola vez)
     if st.button(
@@ -178,7 +187,7 @@ if opcion == "📅 Calcular mi fecha estimada":
             fig_hist.add_vline(x=meses_promedio, line_dash="dash", line_color="green",
                               annotation_text=f"Promedio: {int(meses_promedio)} meses")
             
-            st.plotly_chart(fig_hist, use_container_width=True)
+            st.plotly_chart(fig_hist, width='stretch')
     
 # ⬅️ ESTO VA FUERA DEL IF DEL BOTÓN
     with st.expander("ℹ️ Cómo funciona esta calculadora", expanded=False):
@@ -224,7 +233,7 @@ else:
     ultimas['Meses_Espera'] = ultimas['Meses_Espera'].round(1)
     ultimas.columns = ['Fecha Presentación', 'Fecha Resolución', 'Meses', 'Anexo', 'Observaciones']
     
-    st.dataframe(ultimas, use_container_width=True, hide_index=True)
+    st.dataframe(ultimas, width='stretch', hide_index=True)
     
     st.divider()
     
@@ -249,7 +258,7 @@ else:
             color_discrete_sequence=['#2ecc71']
         )
         
-        st.plotly_chart(fig_tendencia, use_container_width=True)
+        st.plotly_chart(fig_tendencia, width='stretch')
     
     with col_b:
         # Distribución por anexo
@@ -266,7 +275,7 @@ else:
             color_discrete_sequence=px.colors.qualitative.Set3
         )
         
-        st.plotly_chart(fig_anexos, use_container_width=True)
+        st.plotly_chart(fig_anexos, width='stretch')
     
     st.divider()
     
@@ -280,7 +289,7 @@ else:
     tiempos_anexo.columns = ['Promedio (meses)', 'Mediana (meses)', 'Cantidad de casos']
     tiempos_anexo = tiempos_anexo.reset_index()
     
-    st.dataframe(tiempos_anexo, use_container_width=True, hide_index=True)
+    st.dataframe(tiempos_anexo, width='stretch', hide_index=True)
     
     # Box plot de tiempos
     #st.subheader("📊 Distribución de tiempos de espera")
@@ -295,7 +304,7 @@ else:
     #    color_discrete_sequence=px.colors.qualitative.Pastel
     #)
     
-    #st.plotly_chart(fig_box, use_container_width=True) 
+    #st.plotly_chart(fig_box, width='stretch') 
 
 st.divider()
 st.caption(f"""
@@ -303,7 +312,7 @@ st.caption(f"""
 Esta aplicación usa datos reales del grupo de WhatsApp de solicitantes en Córdoba.  
 Las estimaciones son aproximadas y pueden variar según múltiples factores.
 
-📊 **Última actualización:** {datetime.now().strftime("%d/%m/%Y")}
+📊 **Última actualización:** {now_ar().strftime("%d/%m/%Y")}
 """)
 
 st.divider()
