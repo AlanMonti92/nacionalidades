@@ -7,11 +7,23 @@ import numpy as np
 
 from zoneinfo import ZoneInfo
 from datetime import datetime
+import subprocess
 
 TZ_AR = ZoneInfo("America/Argentina/Buenos_Aires")
 
 def now_ar():
     return datetime.now(TZ_AR).replace(tzinfo=None)
+
+def obtener_fecha_commit():
+    try:
+        return subprocess.check_output(
+            ['git', 'log', '-1', '--format=%cd', '--date=format:%d/%m/%Y'],
+            text=True
+        ).strip()
+    except:
+        return now_ar().strftime("%d/%m/%Y")
+
+fecha_commit = obtener_fecha_commit()
 
 # Configuración de la página
 st.set_page_config(
@@ -312,7 +324,7 @@ st.caption(f"""
 Esta aplicación usa datos reales del grupo de WhatsApp de solicitantes en Córdoba.  
 Las estimaciones son aproximadas y pueden variar según múltiples factores.
 
-📊 **Última actualización:** {now_ar().strftime("%d/%m/%Y")}
+📊 **Última actualización:** {fecha_commit}
 """)
 
 st.divider()
