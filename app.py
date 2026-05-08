@@ -331,7 +331,7 @@ st.divider()
 
 st.caption("""
 🤍 **Proyecto independiente**  
-Si esta herramienta te fue útil y querés colaborar (opcional):  
+Si esta herramienta te fue útil y querés colaborar con su mantenimiento, podés hacerlo a través de MercadoPago.:  
 **Alias:** alanmonti.mp
 """)
 
